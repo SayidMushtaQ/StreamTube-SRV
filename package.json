@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index"
+    "dev": "dotenvx run -- nodemon src/index"
   },
   "keywords": [
     "StreamTube",
@@ -16,6 +16,7 @@
   "author": "Mustak",
   "license": "ISC",
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.5.0",
     "express": "^4.19.2",
     "mongoose": "^8.4.4"
   },
