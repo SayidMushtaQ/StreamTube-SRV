@@ -16,8 +16,11 @@ app.use(
 app.use(express.json({ limit: DATA_LIMIT }));
 app.use(express.urlencoded({ extended: true, limit: DATA_LIMIT }));
 app.use(express.static("public"));
-app.use(cookieParser(process.env.COOKIE_PARSER_SECRET))
+app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 
+//Import routes
+import userRouter from "./routes/user.router.js";
 
+app.use("/user", userRouter);
 
 export { app };
