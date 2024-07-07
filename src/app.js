@@ -21,6 +21,6 @@ app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 //Import routes
 import userRouter from "./routes/user.router.js";
 
-app.use("/user", userRouter);
+app.use("/api/v1/users", userRouter);
 
 export { app };
