@@ -26,6 +26,14 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409,'User already exists')
   }
 
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const coverImgLocalPath = req.files?.coverImage[0]?.path;
+
+  if(!avatarLocalPath){
+    throw new ApiError(400,'Avatar img is required')
+  }
+  console.log(req.files)
+
   res
     .status(200)
     .json(new apiResponse(200, { Ok: "Ok" }, "Data retrieved successfully"));
