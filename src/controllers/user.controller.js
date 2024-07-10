@@ -4,13 +4,12 @@ import { ApiError } from "../util/apiError.utils.js";
 import { EMAIL_REGEX } from "../constants.js";
 import { User } from "../modules/user.model.js";
 import { uploadOnCloudinary } from "../util/cloudinary.util.js";
-import fs from 'fs'
+import fs from "fs";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { userName, fullName, email, password } = req.body;
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImgLocalPath = req.files?.coverImage[0]?.path;
-
+  const coverImgLocalPath = req.files?.coverImage ? req.files.coverImage[0]?.path : null;
   if ([userName, fullName, email, password].some(field => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required", [
       "Please fill up all necessary fields",
@@ -24,18 +23,15 @@ const registerUser = asyncHandler(async (req, res) => {
   const isAlreadyUserExist = await User.findOne({
     $or: [{ userName }, { email }]
   });
-  console.log("Existing user: ",isAlreadyUserExist);
   if (isAlreadyUserExist) {
-    fs.unlinkSync(avatarLocalPath); 
+    fs.unlinkSync(avatarLocalPath);
     fs.unlinkSync(coverImgLocalPath);
     throw new ApiError(409, "User already exists");
   }
 
-  console.log("Avatar local path: ",avatarLocalPath);
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
-  console.log("Request files: ", req.files); //Console req.file
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImgLocalPath);
@@ -46,7 +42,6 @@ const registerUser = asyncHandler(async (req, res) => {
       "Image upload failed due to an internal server error"
     );
   }
-  console.log("Avatar: ", avatar);
 
   const userRes = await User.create({
     fullName,
@@ -54,27 +49,25 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     avatar: avatar.url,
     userName: userName.toLowerCase(),
-    coverImage: coverImage.url
+    coverImage: coverImage?.url || ""
   });
   if (!userRes) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
-  console.log("User Response: ", userRes);
-  res
-    .status(201)
-    .json(
-      new apiResponse(
-        200,
-        {
-          userName: userRes.userName,
-          email: userRes.email,
-          fullName: userRes.fullName,
-          avatar: userRes.avatar,
-          coverImage: userRes.coverImage
-        },
-        "User registered successfully"
-      )
-    );
+  
+  res.status(201).json(
+    new apiResponse(
+      200,
+      {
+        userName: userRes.userName,
+        email: userRes.email,
+        fullName: userRes.fullName,
+        avatar: userRes.avatar,
+        coverImage: userRes.coverImage
+      },
+      "User registered successfully"
+    )
+  );
 });
 
 export { registerUser };
