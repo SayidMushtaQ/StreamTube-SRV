@@ -4,12 +4,14 @@ import { ApiError } from "../util/apiError.utils.js";
 import { EMAIL_REGEX } from "../constants.js";
 import { User } from "../modules/user.model.js";
 import { uploadOnCloudinary } from "../util/cloudinary.util.js";
+import fs from 'fs'
 
 const registerUser = asyncHandler(async (req, res) => {
   const { userName, fullName, email, password } = req.body;
-  if (
-    [userName, fullName, email, password].some(field => field?.trim() === "")
-  ) {
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const coverImgLocalPath = req.files?.coverImage[0]?.path;
+
+  if ([userName, fullName, email, password].some(field => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required", [
       "Please fill up all necessary fields",
       "Check userName,fullName,email and password fields"
@@ -19,17 +21,17 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid email format");
   }
 
-  const isAlreadyUserExist = await User.find({
+  const isAlreadyUserExist = await User.findOne({
     $or: [{ userName }, { email }]
   });
   console.log("Existing user: ",isAlreadyUserExist);
-  if (isAlreadyUserExist.length > 0) {
+  if (isAlreadyUserExist) {
+    fs.unlinkSync(avatarLocalPath); 
+    fs.unlinkSync(coverImgLocalPath);
     throw new ApiError(409, "User already exists");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImgLocalPath = req.files?.coverImage[0]?.path;
-
+  console.log("Avatar local path: ",avatarLocalPath);
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
