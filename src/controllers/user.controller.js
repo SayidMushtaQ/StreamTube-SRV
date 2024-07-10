@@ -4,7 +4,6 @@ import { ApiError } from "../util/apiError.utils.js";
 import { EMAIL_REGEX } from "../constants.js";
 import { User } from "../modules/user.model.js";
 import { uploadOnCloudinary } from "../util/cloudinary.util.js";
-import bcryptjs from "bcryptjs";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { userName, fullName, email, password } = req.body;
@@ -23,7 +22,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const isAlreadyUserExist = await User.find({
     $or: [{ userName }, { email }]
   });
-  
+  console.log("Existing user: ",isAlreadyUserExist);
   if (isAlreadyUserExist.length > 0) {
     throw new ApiError(409, "User already exists");
   }
@@ -34,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
-  console.log(req.files); //Console req.file
+  console.log("Request files: ", req.files); //Console req.file
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImgLocalPath);
@@ -45,7 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
       "Image upload failed due to an internal server error"
     );
   }
-  console.log(avatar);
+  console.log("Avatar: ", avatar);
 
   const userRes = await User.create({
     fullName,
@@ -55,13 +54,25 @@ const registerUser = asyncHandler(async (req, res) => {
     userName: userName.toLowerCase(),
     coverImage: coverImage.url
   });
-  if(!userRes){
-    throw new ApiError(500,'Something went wrong while registering the user')
+  if (!userRes) {
+    throw new ApiError(500, "Something went wrong while registering the user");
   }
-  console.log(userRes);
+  console.log("User Response: ", userRes);
   res
     .status(201)
-    .json(new apiResponse(200, "User registered successfully"));
+    .json(
+      new apiResponse(
+        200,
+        {
+          userName: userRes.userName,
+          email: userRes.email,
+          fullName: userRes.fullName,
+          avatar: userRes.avatar,
+          coverImage: userRes.coverImage
+        },
+        "User registered successfully"
+      )
+    );
 });
 
 export { registerUser };
