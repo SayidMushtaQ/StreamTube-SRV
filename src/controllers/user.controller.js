@@ -33,8 +33,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar is required");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImgLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath,'StreamTube/avatars');
+  const coverImage = await uploadOnCloudinary(coverImgLocalPath,'StreamTube/coverImages');
 
   if (!avatar) {
     throw new ApiError(

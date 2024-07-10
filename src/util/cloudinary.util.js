@@ -7,13 +7,13 @@ cloudinary.config({
   secure: true
 });
 
-export const uploadOnCloudinary = async localFilePath => {
+export const uploadOnCloudinary = async (localFilePath,folder='StreamTube') => {
   try {
     if (!localFilePath) return null;
     const response = await cloudinary.uploader.upload(localFilePath, {
       use_filename: true,
       resource_type: "auto",
-      folder:'StreamTube'
+      folder
     });
     // console.log("File is uploadet sucessfully: ", response);
     fs.unlinkSync(localFilePath);
